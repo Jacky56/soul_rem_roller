@@ -19,6 +19,10 @@ If you get a not found error, you could [edit these lines](./src/ocr.py#L3-L5) t
 
 edit mod list under `./mod_list.yaml`
 
+run the program:
+```sh
+python3 main.py
+```
 
 press `q` or or `Esc` to end the program.
 
