@@ -2,6 +2,5 @@ PyGetWindow==0.0.9
 PyAutoGUI==0.9.54
 dxcam==0.3.0
 opencv-python==5.0.0.93
-# pytesseract==0.3.13
 rapidocr-onnxruntime==1.4.4
 onnxruntime-gpu==1.30.0

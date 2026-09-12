@@ -5,6 +5,11 @@ from datetime import datetime
 import time
 import msvcrt
 import logging
+import yaml
+
+with open("mod_list.yaml", "r") as f:
+    mod_list = yaml.safe_load(f)
+    
 logging.basicConfig(level=logging.DEBUG)
 
 
@@ -12,16 +17,15 @@ logging.basicConfig(level=logging.DEBUG)
 if __name__ == "__main__":
     handler = ScreenHandler("Soul's Remnant", capture_time=0.02)
     ocr = OCRHandler()
-    mod_matcher = ModMatcher(["skill range", "dex", "defense"])  # Replace with actual mods
+    mod_matcher = ModMatcher(mod_list)  # Replace with actual mods
     start_time = datetime.now()
     logging.info("Camera started:\nPress 'q' to quit the stream.")
     logging.info("Start time: %s", start_time)
     
     for frame in handler.get_frame():
-        if msvcrt.kbhit() and msvcrt.getch() == b'q':
+        if msvcrt.kbhit() and msvcrt.getch() in (b'q', b'Q', b'\x1b'):
             break
                 
-
         equipped_echos, unequipped_echos = ocr(frame)
         
         # if not equipped_echos and not unequipped_echos:
@@ -37,7 +41,6 @@ if __name__ == "__main__":
                 exit(0)
 
         if not flag and unequipped_echos:
-            
             handler.do_click()
 
     end_time = datetime.now()
