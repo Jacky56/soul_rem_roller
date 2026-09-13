@@ -31,7 +31,7 @@ logging.basicConfig(
         logging.StreamHandler()
     ]
     
-)m
+)
 
 if __name__ == "__main__":
     handler = ScreenHandler("Soul's Remnant", capture_time=0.02)
