@@ -33,3 +33,7 @@ The application will pause if:
 - inventory UI is not open
 - soul rem is minimised
 - soul rem not in focus
+
+
+Application will not click:
+- if you do not hover a item with no echo mods
