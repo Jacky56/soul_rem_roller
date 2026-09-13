@@ -27,6 +27,7 @@ class ScreenHandler:
         self.fps = fps
         self.capture_time = capture_time
         
+        self._click_pos = []
 
     def _find_window(self) -> Win32Window:
         windows = gw.getWindowsWithTitle(self.title)
@@ -96,12 +97,20 @@ class ScreenHandler:
         y = cy if y is None else y
         x = cx if x is None else x
         
-        var_x = int(self.window_width * 0.001)
-        var_y = int(self.window_height * 0.001)
-        
+        var_x = int(self.window_width * 0.002)
+        var_y = int(self.window_height * 0.002)
+        r_x = random.randint(-var_x, var_x)
+        r_y = random.randint(-var_y, var_y)
+        self._click_pos.append((r_x, r_y))
+        if len(self._click_pos) > 5:
+            self._click_pos = self._click_pos[1:]
+            
+        mean_var_x = round(sum(pos[0] for pos in self._click_pos) / len(self._click_pos))
+        mean_var_y = round(sum(pos[1] for pos in self._click_pos) / len(self._click_pos))
         if random_offset:
-            x += random.randint(-var_x, var_x)
-            y += random.randint(-var_y, var_y)
+            x += r_x - mean_var_x
+            y += r_y - mean_var_y
         pyautogui.moveTo(x, y, duration=0.03)
+        
         pyautogui.click()
         time.sleep(0.05)

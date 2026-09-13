@@ -10,13 +10,14 @@ class TestOCRHandler(unittest.TestCase):
     def setUp(self):
         self.ocr_handler = OCRHandler()
         self.sample_frame = "tests/sample_frame.png"
+        # self.sample_frame = "tests/image.png"
 
 
     def test_ocr_handler_initialization(self):
         self.assertIsInstance(self.ocr_handler, OCRHandler)
         
     def test_ocr_handler_callable(self):
-        equipped_echos, unequipped_echos =self.ocr_handler(self.sample_frame)
+        equipped_echos, unequipped_echos, _ = self.ocr_handler(self.sample_frame)
         
         equipped_echos_mods = ModMatcher([
             "jump",

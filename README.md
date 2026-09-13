@@ -24,6 +24,12 @@ run the program:
 python3 main.py
 ```
 
-press `q` or or `Esc` to end the program.
+press `Pause` or `F12` hotkeys to pause/resume the program
+
 
 upon hitting any mods on the list, the game will close itself.
+
+The application will pause if:
+- inventory UI is not open
+- soul rem is minimised
+- soul rem not in focus

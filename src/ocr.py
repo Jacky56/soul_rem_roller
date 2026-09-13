@@ -14,7 +14,6 @@ from typing import List
 import dataclasses
 
 
-
 @dataclasses.dataclass
 class EchoGroup:
     bbox: List[List[int]]
@@ -33,7 +32,7 @@ class OCRHandler:
             rec_use_cuda=True,
         )
 
-    def __call__(self, image, score_threshold=0.75):
+    def __call__(self, image, score_threshold=0.5):
         """
         method that extracts landmarks, finds echo groups, and identifies equipped items from the given image.
         """
@@ -42,9 +41,9 @@ class OCRHandler:
         grouping = self.find_equipped_landmarks(result, echo_groups)
         equipped_echos = self.get_echoes(result, grouping.equipped)
         unequipped_echos = self.get_echoes(result, grouping.unequipped)
-        return equipped_echos, unequipped_echos
+        return equipped_echos, unequipped_echos, result
 
-    def read_frame(self, image, score_threshold=0.8):
+    def read_frame(self, image, score_threshold=0.5):
         result = self.reader(image)[0]
         
         return [
@@ -104,12 +103,17 @@ class OCRHandler:
         
         groups = landmarks
         equipped_landmarks: List[dict] = []
-        equipped = set("(equip)")
+        equipped = set("(equipped)")
+        eguip = set("(eguip)")
+        equip = set("(equip)")
         for r in result:
             bbox, text, score, text_set, text_length = r["bbox"], r["text"], r["score"], r["set"], r["length"]
-            if equipped.issubset(text_set) and 4 <= text_length:
+            if (
+                equipped.issubset(text_set) or
+                eguip.issubset(text_set) or
+                equip.issubset(text_set)
+            ) and text != "equip":
                 equipped_landmarks.append(r)
-                
         d: dict[str, List[EchoGroup]] = {}
         
         paired = set()
@@ -117,6 +121,7 @@ class OCRHandler:
             avg_x = (g.bbox[0][0] + g.bbox[-1][0]) / 2
             avg_y = (g.bbox[0][1] + g.bbox[-1][1]) / 2
             closest_group = None
+            closest_index = None
             for i, eq in enumerate(equipped_landmarks):
                 bbox = eq["bbox"]
                 avg_eq_x = (bbox[0][0] + bbox[-1][0]) / 2
@@ -127,15 +132,18 @@ class OCRHandler:
                     and i not in paired
                 ):
                     closest_group = g
-                    paired.add(i)
+                    closest_index = i
+                    
             if closest_group:
                 if "equipped" not in d:
                     d["equipped"] = []
                 d["equipped"].append(closest_group)
+                paired.add(closest_index)
             else:
                 if "unequipped" not in d:
                     d["unequipped"] = []
                 d["unequipped"].append(g)
+  
 
         return Grouping(
             equipped=d.get("equipped", []),

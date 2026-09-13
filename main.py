@@ -6,13 +6,32 @@ import time
 import msvcrt
 import logging
 import yaml
+from pynput import keyboard
+
+PAUSE = False
+
+def on_press(key):
+    global PAUSE
+    if key in (keyboard.Key.pause, keyboard.Key.f12):
+        PAUSE = not PAUSE
+        print("Paused" if PAUSE else "Resumed")
+
+listener = keyboard.Listener(on_press=on_press)
+listener.start()
 
 with open("mod_list.yaml", "r") as f:
     mod_list = yaml.safe_load(f)
     
-logging.basicConfig(level=logging.DEBUG)
-
-
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    handlers=[
+        logging.FileHandler("app.log", encoding="utf-8"),
+        logging.StreamHandler()
+    ]
+    
+)m
 
 if __name__ == "__main__":
     handler = ScreenHandler("Soul's Remnant", capture_time=0.02)
@@ -25,23 +44,25 @@ if __name__ == "__main__":
     for frame in handler.get_frame():
         if msvcrt.kbhit() and msvcrt.getch() in (b'q', b'Q', b'\x1b'):
             break
-                
-        equipped_echos, unequipped_echos = ocr(frame)
+        if PAUSE:
+            continue
+        equipped_echos, unequipped_echos, ocr_result = ocr(frame)
+        if not any(set("invent").issubset(d["set"]) for d in ocr_result):
+            PAUSE = True
+            print("Inventory not detected, pausing.")
         
-        # if not equipped_echos and not unequipped_echos:
-        #     continue
-        
-        flag = False
         for echo_pool in unequipped_echos:
             matched_mods_unequipped = mod_matcher(echo_pool)
             if matched_mods_unequipped:
                 logging.info("Matched Mods Unequipped: %s", matched_mods_unequipped)
-                flag = True
-                handler.window.close()
-                exit(0)
+                
+                # handler.window.close()
+                PAUSE = True
+                print("Paused")
 
-        if not flag and unequipped_echos:
+        if not PAUSE and unequipped_echos:
             handler.do_click()
+        logging.info("Unequipped echos: %s", unequipped_echos)
 
     end_time = datetime.now()
     logging.info("End time: %s", end_time)

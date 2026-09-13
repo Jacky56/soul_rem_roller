@@ -6,10 +6,10 @@ class ModMatcher:
         self.list_of_mods = self._parse_mods(list_of_mods)
     
 
-    def __call__(self, text: List[str]) -> List[str]:
+    def __call__(self, text: List[str], threshold: float = 0.6) -> List[str]:
         result = []
         for s in text:
-            result.extend(self.match_mod(s))
+            result.extend(self.match_mod(s, threshold=threshold))
         return result
 
     def _parse_mods(self, result: List[str]):
@@ -23,15 +23,6 @@ class ModMatcher:
             for r in result
         ]
         return curated
-        
-    def _match_mod(self, text: str):
-        text_lower = text.lower()
-        text_set = set(text_lower)
-        matches = []
-        for mod in self.list_of_mods:
-            if abs(len(text_set & mod["set"]) - mod["len"]) < max(2, int(mod["len"] * 0.3)):
-                matches.append(mod["text"])
-        return matches
     
     def get_bigrams(self, string: str) -> set:
         """Converts a string into a set of overlapping 2-character substrings."""
